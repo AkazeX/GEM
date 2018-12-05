@@ -142,6 +142,23 @@ void loop()
 
         //POURING
         case 2:
+          if(iPosLiquid >= 100)
+          {
+            bMotorLiquidUp = false;
+          }
+          else
+          {
+            bMotorLiquidUp = true;
+          }
+
+          if(iPosGlass >= iMaxHeightGlass)
+          {
+            bMotorLiquidUp = false;
+          }
+          else if(iPosLiquid >= 100 or iPosGlass <= 40)
+          {
+            bMotorLiquidUp = true;
+          }
           break;
 
         //PLACING
