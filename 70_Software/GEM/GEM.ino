@@ -20,6 +20,8 @@ bool bManualGlassDown = false;
 //Sensore
 bool bGlassDown = false;
 bool bLiquidDown = false;
+bool bLiquidPresent = false;
+bool bGlassPresent = false;
 //Mode
 int iMode = 0;
 /* 0: Off
@@ -132,7 +134,7 @@ void loop()
               iLastState = iState;
               iState = 2;
             }
-            else
+            else if(bLiquidPresent and bGlassPresent)
             {
               iLastState = iState;
               iState = 3;
@@ -142,6 +144,23 @@ void loop()
 
         //POURING
         case 2:
+          if(iPosGlass >= 30)
+          {
+            bMotorGlassUp = false;
+          }
+          else
+          {
+            bMotorGlassUp = true;
+          }
+
+          if(iPosLiquid >= iMaxHeightLiquid)
+          {
+            bMotorLiquidUp = false;
+          }
+          else if(iPosGlass >= 30 or iPosLiquid<= 40)
+          {
+            bMotorLiquidUp = true;
+          }
           break;
 
         //PLACING
@@ -153,8 +172,14 @@ void loop()
           }
           else
           {
-            bMotorLiquidDown = true;
-            bMotorGlassDown = true;
+            if(not bLiquidDown)
+            {
+               bMotorLiquidDown = true;
+            }
+            if(not bGlassDown)
+            {
+              bMotorGlassDown = true;
+            }         
           }
           break;
 
