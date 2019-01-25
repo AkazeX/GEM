@@ -66,7 +66,7 @@ int iLastState = 0;
 int iMaxHeightLiquid = 100;
 int iMaxHeightGlass = 100;
 int iRatioSpeed = 360;
-float fPWMPbr = 0.15121 * iRatioSpeed + 60;
+float fPWMPbr = 40;
 float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; 
 
 
@@ -295,6 +295,8 @@ void loop()
   bMotorLiquidUp = true;
   bMotorLiquidDown = false;
 
+  while(true)
+  {
   //Movement
   if(bMotorLiquidUp || bMotorLiquidDown)
   {
@@ -303,20 +305,19 @@ void loop()
       case 1:
         if(bMotorLiquidUp)
         {
-           iActualStep = iActualStep + 2;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
-          iActualStep = 7;
+          iActualStep = 8;
         }
         step1();
         rotationDelay(fDelay);
-        break;
 
       case 2:
         if(bMotorLiquidUp)
         {
-           iActualStep = iActualStep + 2;;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
@@ -324,12 +325,11 @@ void loop()
         }
         step2();
         rotationDelay(fDelay);
-        break;
 
       case 3:
         if(bMotorLiquidUp)
         {
-           iActualStep = iActualStep + 2;;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
@@ -337,12 +337,11 @@ void loop()
         }
         step3();
         rotationDelay(fDelay);
-        break;
 
       case 4:
         if(bMotorLiquidUp)
         {
-           iActualStep = iActualStep + 2;;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
@@ -350,12 +349,11 @@ void loop()
         }
         step4();
         rotationDelay(fDelay);
-        break;
 
       case 5:
         if(bMotorLiquidUp)
         {
-           iActualStep = iActualStep + 2;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
@@ -363,12 +361,11 @@ void loop()
         }
         step5();
         rotationDelay(fDelay);
-        break;
 
       case 6:
         if(bMotorLiquidUp)
         {
-           iActualStep = iActualStep + 2;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
@@ -376,12 +373,11 @@ void loop()
         }
         step6();
         rotationDelay(fDelay);
-        break;
 
       case 7:
         if(bMotorLiquidUp)
         {
-           iActualStep = 1;
+          ++ iActualStep;
         }
         else if(bMotorLiquidDown)
         {
@@ -389,7 +385,6 @@ void loop()
         }
         step7();
         rotationDelay(fDelay);
-        break;
 
       case 8:
         if(bMotorLiquidUp)
@@ -402,18 +397,15 @@ void loop()
         }
         step8();
         rotationDelay(fDelay);
-        break;
     }
-
-    Serial.println(iActualStep);
   }
-  
+  }
   
   
 /*
   if (iActualStep == 1) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       iActualStep = 8;
     }
@@ -421,7 +413,7 @@ void loop()
     delay(fDelay);
   } else if (iActualStep == 2) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       -- iActualStep;
     }
@@ -429,7 +421,7 @@ void loop()
     delay(fDelay);
   } else if (iActualStep == 3) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       -- iActualStep;
     }
@@ -437,7 +429,7 @@ void loop()
     delay(fDelay);
   } else if (iActualStep == 4) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       -- iActualStep;
     }
@@ -445,7 +437,7 @@ void loop()
     delay(fDelay);
   } else if (iActualStep == 5) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       -- iActualStep;
     }
@@ -453,7 +445,7 @@ void loop()
     delay(fDelay);
   } else if (iActualStep == 6) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       -- iActualStep;
     }
@@ -461,7 +453,7 @@ void loop()
     delay(fDelay);
   } else if (iActualStep == 7) {
     if (bMotorLiquidUp) {
-       iActualStep = iActualStep + 2;;
+      ++ iActualStep;
     } else {
       -- iActualStep;
     }
