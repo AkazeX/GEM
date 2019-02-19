@@ -1,4 +1,6 @@
 /*******************************************/
+//Librarys
+#include "Nextion.h"
 /*******************************************/
 //Inputs and Ouputs
 //Sensors
@@ -18,12 +20,13 @@ const int DIR12 = 13; //10;
 /*******************************************/
 //HMI
 //Communication
-int incomingBytes[6];  
-int emptyBytes[6]; 
+int incomingBytes[7];
+int sendBytes[7];  
+int emptyBytes[7]; 
 
 
 //Operation
-bool bHMIStart = false;
+bool bHMIStart = false; 
 bool bHMIStop = false;
 bool bHMIInit  = false;
 bool bHMIQuit  = false;
@@ -37,7 +40,7 @@ bool bManualGlassDown = false;
 //Mode
 bool bModeUp = false;
 bool bModeDown = false;
-int iMode = 2;
+int iMode = 0;
 /* 0: Off
  * 1: Auto
  * 2: Manual
@@ -77,6 +80,11 @@ float fPWMPbr = 0.15121 * iRatioSpeed + 60;
 float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; 
 
 
+/*******************************************/
+/*******************************************/
+//Nextion Object
+NexNumber nStep = NexNumber(3, 15, "Step");
+
 
 /*******************************************/
 /*******************************************/
@@ -100,8 +108,10 @@ void loop()
 /*******************************************/
 {
 
+  //nStep.setValue(1);
+
 /*******************************************/
-//Communication
+//Communication Read
 /*******************************************/  
   //Read
   if(Serial1.available() >= 7)
@@ -110,10 +120,10 @@ void loop()
     {
       if(Serial1.available() > 0)
       {
-        incomingBytes[i] =  Serial1.read();                
+        incomingBytes[i] =  Serial1.read(); 
+        Serial.println(incomingBytes[i], HEX);               
       }   
-    }
-    Serial.println(incomingBytes[2], HEX); 
+    }     
   }
 
   //Process
@@ -125,10 +135,10 @@ void loop()
   else if (incomingBytes[1]== 1) //Page Hand
   {
     //Checking ID
-    bManualGlassUp     = (incomingBytes[2]==  7);
-    bManualGlassDown   = (incomingBytes[2]==  8);
-    bManualLiquidUp    = (incomingBytes[2]== 14);
-    bManualLiquidDown  = (incomingBytes[2]== 15);
+    bManualGlassUp     = (incomingBytes[2]==  7 && incomingBytes[3]==  1);
+    bManualGlassDown   = (incomingBytes[2]==  8 && incomingBytes[3]==  1);
+    bManualLiquidUp    = (incomingBytes[2]== 14 && incomingBytes[3]==  1);
+    bManualLiquidDown  = (incomingBytes[2]== 15 && incomingBytes[3]==  1);
   }
   else if (incomingBytes[1]== 2) //Page Visu
   {
@@ -478,8 +488,36 @@ void loop()
         rotationDelay(fDelay);
         break;
     }
-    Serial.println(iActualStep);
+    Serial.println(iActualStep);    
   }
+
+/*******************************************/
+//Communication Write
+/*******************************************/
+  //Reset sending Data
+  sendBytes[0] = 0x65;
+  sendBytes[1] = 0x00;
+  sendBytes[2] = 0x17;
+  sendBytes[3] = 0x01;
+  sendBytes[4] = 0xFF;
+  sendBytes[5] = 0xFF;
+  sendBytes[6] = 0xFF;
+/*  
+if(Serial1.availableForWrite()>=7)
+{
+  if(bManualGlassUp)
+  {
+    Serial.write(sendBytes[0]);
+    Serial.write(sendBytes[1]);
+    Serial.write(sendBytes[2]);
+    Serial.write(sendBytes[3]);
+    Serial.write(sendBytes[4]);
+    Serial.write(sendBytes[5]);
+    Serial.write(sendBytes[6]); 
+  }
+}
+
+*/
 
 
 /*******************************************/
@@ -492,10 +530,10 @@ void loop()
   //Reset HMI
   bModeUp         = false;
   bModeDown       = false;
-  bManualGlassUp      = false;
-  bManualGlassDown    = false;
-  bManualLiquidUp     = false;
-  bManualLiquidDown   = false;
+//  bManualGlassUp      = false;
+//  bManualGlassDown    = false;
+//  bManualLiquidUp     = false;
+//  bManualLiquidDown   = false;
   bHMIStart       = false;
   bHMIStop        = false;
   bHMIInit        = false;
