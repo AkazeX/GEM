@@ -11,10 +11,10 @@ bool bGlassPresent = false;
 
 //Pin numbers
 //Motor driver 1
-const int PWM11 = 11;
-const int PWM12 = 12;
-const int DIR11 = 9;
-const int DIR12 = 10;
+const int PWM11 = 3;
+const int PWM12 = 11; //12;
+const int DIR11 = 12; //9;
+const int DIR12 = 13; //10;
 
 /*******************************************/
 /*******************************************/
@@ -78,6 +78,7 @@ int iActualStep = 1;
 int iRatioSpeed = 360;
 float fPWMPbr = 40; //0.15121 * iRatioSpeed + 60;
 float fDelay = 1000; //(((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
+int idelayMs = 1; 
 
 
 /*******************************************/
@@ -381,19 +382,19 @@ void loop()
 /*******************************************/
 //Movement
 /*******************************************/
-   
-  if(bMotorLiquidUp or bMotorLiquidDown)
+  bMotorLiquidUp = HIGH;  
+  if(bMotorLiquidUp || bMotorLiquidDown)
   {
     switch(iActualStep)
     {
       case 1:
         if(bMotorLiquidUp)
         {
-          iActualStep = iActualStep + 2;
+           ++iActualStep;
         }
         else if(bMotorLiquidDown)
         {
-          iActualStep = 7;
+          iActualStep = 8;
         }
         step1();
         rotationDelay(fDelay);
@@ -402,24 +403,24 @@ void loop()
       case 2:
         if(bMotorLiquidUp)
         {
-          ++ iActualStep;
+           ++iActualStep;;
         }
         else if(bMotorLiquidDown)
         {
           -- iActualStep;
         }
         step2();
-        delayMicroseconds(fDelay);
+        rotationDelay(fDelay);
         break;
 
       case 3:
         if(bMotorLiquidUp)
         {
-          iActualStep = iActualStep + 2;
+           ++iActualStep;;
         }
         else if(bMotorLiquidDown)
         {
-          iActualStep = iActualStep - 2;
+          -- iActualStep;
         }
         step3();
         rotationDelay(fDelay);
@@ -428,24 +429,24 @@ void loop()
       case 4:
         if(bMotorLiquidUp)
         {
-          ++ iActualStep;
+           ++iActualStep;;
         }
         else if(bMotorLiquidDown)
         {
           -- iActualStep;
         }
         step4();
-        delayMicroseconds(fDelay);
+        rotationDelay(fDelay);
         break;
 
       case 5:
         if(bMotorLiquidUp)
         {
-          iActualStep = iActualStep + 2;
+           ++iActualStep;
         }
         else if(bMotorLiquidDown)
         {
-          iActualStep = iActualStep - 2;
+          -- iActualStep;
         }
         step5();
         rotationDelay(fDelay);
@@ -454,24 +455,24 @@ void loop()
       case 6:
         if(bMotorLiquidUp)
         {
-          ++ iActualStep;
+           ++iActualStep;
         }
         else if(bMotorLiquidDown)
         {
           -- iActualStep;
         }
         step6();
-        delayMicroseconds(fDelay);
+        rotationDelay(fDelay);
         break;
 
       case 7:
         if(bMotorLiquidUp)
         {
-          iActualStep = 1;
+           ++iActualStep;
         }
         else if(bMotorLiquidDown)
         {
-          iActualStep = iActualStep - 2;
+          -- iActualStep;
         }
         step7();
         rotationDelay(fDelay);
@@ -487,19 +488,18 @@ void loop()
           -- iActualStep;
         }
         step8();
-        delayMicroseconds(fDelay);
+        rotationDelay(fDelay);
         break;
-    }
-    Serial.println(iActualStep);
+    }       
   }
-  else
-  {
-    digitalWrite(DIR11, LOW);
-    digitalWrite(DIR12, LOW);
-    digitalWrite(PWM11, LOW);
-    digitalWrite(PWM12, LOW);
-    
-  }
+  Serial.println(iActualStep); 
+//  else
+//  {
+//    digitalWrite(DIR11, LOW);
+//    digitalWrite(DIR12, LOW);
+//    analogWrite(PWM11, LOW);
+//    analogWrite(PWM12, LOW);
+//  }
 
 /*******************************************/
 //Communication Write
@@ -553,6 +553,7 @@ if(Serial1.availableForWrite()>=7)
 /*******************************************/
 //Funktions
 /*******************************************/ 
+
 void step1()  {
   digitalWrite(DIR11, HIGH);
   digitalWrite(DIR12, HIGH);
@@ -609,15 +610,15 @@ void step8() {
   analogWrite(PWM12, fPWMPbr);
 }
 
-
 void rotationDelay(float rDelay)
 {
-  if(rDelay >5000)
-  {
-    delay(rDelay/1000);
-  }
-  else
-  {
-    delayMicroseconds(rDelay);
-  }  
+//  if(rDelay >5000)
+//  {
+//    delay(rDelay/1000);
+//  }
+//  else
+//  {
+//    delayMicroseconds(rDelay);
+//  } 
+  delay(idelayMs); 
 }
