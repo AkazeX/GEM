@@ -61,8 +61,8 @@ bool bMotorLiquidDown = false;
 bool bMotorGlassUp = false;
 bool bMotorGlassDown = false;
 
-float fPosLiquid = 0;
-float fPosGlass = 0;
+int iPosLiquid = 0;
+int iPosGlass = 0;
 int iShakes = 0;
 int iState = 0; 
 int iLastState = 0;
@@ -74,15 +74,20 @@ int iLastState = 0;
  */
 
 //Values
-int iMaxHeightLiquid = 100;
-int iMaxHeightGlass = 40;
-float fPosRatio = 0.01;
+int iPosRatio = 1;
 int iActualStep = 1;
 int iRatioSpeed = 360;
-float fPWMPbr = 40; //0.15121 * iRatioSpeed + 60;
-float fDelay = 1000; //(((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
+float fPWMPbr = 0.15121 * iRatioSpeed + 60;
+float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
 
-
+//Constantes
+const int cPosGlass = 250;
+const int cPosLiquid1 = 240;
+const int cPosLiquid2 = 280;
+const int cPosLiquid3 = 580;
+const int cDeltaPosShake = 20;
+const int iMaxHeightLiquid = 620;
+const int iMaxHeightGlass = 120;
 /*******************************************/
 /*******************************************/
 //Nextion Object
@@ -181,13 +186,13 @@ void loop()
   //Position Glas
   if(bGlassDown)
   {
-    fPosGlass = 0;
+    iPosGlass = 0;
   }
 
   //Positon Liquid
   if(bLiquidDown)
   {
-    fPosLiquid = 0;
+    iPosLiquid = 0;
   }
 
   //Init Position
@@ -296,19 +301,19 @@ void loop()
             bMotorGlassUp = true;
 
            //If the Glass reached the Position, stop the Motor
-            if(fPosGlass >= 25)
+            if(iPosGlass >= cPosGlass)
             {
               bMotorGlassUp = false;
             }
 
             //If the Liquid reached the Position, stop the Motor
-            if(fPosLiquid >= 45)
+            if(iPosLiquid >= cPosLiquid2)
             {
               bMotorLiquidUp = false;
             }
 
             //If the Glass and Liquid reached the Positions, advance
-            if(fPosGlass >= 25 && fPosLiquid >= 45)
+            if(iPosGlass >= cPosGlass && iPosLiquid >= cPosLiquid2)
             {
               iLastState = iState;
               iState = 4;
@@ -321,7 +326,7 @@ void loop()
             bMotorLiquidUp = true;
 
             //If the Liquid reached the Position, stop the Motor
-            if(fPosLiquid >= 60 )
+            if(iPosLiquid >= cPosLiquid3 )
             {
               bMotorLiquidUp = false;
 
@@ -346,7 +351,7 @@ void loop()
             bMotorLiquidDown = true;
 
             //If the Liquid reaches the Position, stop the Motor
-            if(fPosLiquid <= 30)
+            if(iPosLiquid <= cPosLiquid1)
             {
               bMotorLiquidDown = false;
               iShakes = 0;
@@ -358,13 +363,13 @@ void loop()
           //Shake Bottle
           case 6:
             //If the Liquid reaches the Position, change Motordirection
-            if(fPosLiquid <= (30 - 5))
+            if(iPosLiquid <= (cPosLiquid1 - cDeltaPosShake))
             {
               bMotorLiquidUp = true;
               bMotorLiquidDown = false;                           
             }
             //If the Liquid reaches the Position, change Motordirection
-            else if(fPosLiquid >= (30 + 5))
+            else if(iPosLiquid >= (cPosLiquid1 + cDeltaPosShake))
             {
               bMotorLiquidUp = false;
               bMotorLiquidDown = true;
@@ -385,7 +390,7 @@ void loop()
             bMotorLiquidUp = true;
 
             //If the Liquid reached the Position, stop the Motor
-            if(fPosLiquid >= 60 )
+            if(iPosLiquid >= cPosLiquid3 )
             {
               bMotorLiquidUp = false;
               iLastState = iState;
@@ -419,13 +424,13 @@ void loop()
             bMotorLiquidDown = true;
 
             //If the Liquid reached the Position, stop the Motor
-            if(fPosLiquid == 0 || bLiquidDown)
+            if(iPosLiquid == 0 || bLiquidDown)
             {
               bMotorLiquidDown = false;
             }
 
             //If the Glass reached the Position, stop the Motor
-            if(fPosGlass == 0 || bGlassDown)
+            if(iPosGlass == 0 || bGlassDown)
             {
               bMotorLiquidDown = false;
             }
@@ -470,10 +475,10 @@ void loop()
         bMotorGlassDown = false;
       
         //Movement when pushed
-        bMotorLiquidUp = bManualLiquidUp and not (fPosLiquid >= iMaxHeightLiquid);
-        bMotorLiquidDown = bManualLiquidDown and not (bLiquidDown || fPosLiquid <= 0);
-        bMotorGlassUp = bManualGlassUp and not (fPosGlass >= iMaxHeightGlass);
-        bMotorGlassDown = bManualGlassDown and not (bGlassDown || fPosGlass <= 0);
+        bMotorLiquidUp = bManualLiquidUp and not (iPosLiquid >= iMaxHeightLiquid);
+        bMotorLiquidDown = bManualLiquidDown and not (bLiquidDown || iPosLiquid <= 0);
+        bMotorGlassUp = bManualGlassUp and not (iPosGlass >= iMaxHeightGlass);
+        bMotorGlassDown = bManualGlassDown and not (bGlassDown || iPosGlass <= 0);
         break;
 
 
@@ -482,7 +487,7 @@ void loop()
 /*******************************************/
       case 3:
       //Motor Liquid Up
-      if(fPosLiquid >= iMaxHeightLiquid)
+      if(iPosLiquid >= iMaxHeightLiquid)
       {
         bMotorLiquidUp = false;
       }
@@ -502,7 +507,7 @@ void loop()
       }
 
       //Motor Glass Up
-      if(fPosGlass >= iMaxHeightGlass)
+      if(iPosGlass >= iMaxHeightGlass)
       {
         bMotorGlassUp = false;
       }
@@ -536,12 +541,12 @@ void loop()
         if(bMotorLiquidDown)
         {
           iActualStep = iActualStep + 2;
-          fPosLiquid = fPosLiquid - fPosRatio ;
+          iPosLiquid = iPosLiquid - iPosRatio ;
         }
         else if(bMotorLiquidUp)
         {
           iActualStep = 7;
-          ++fPosLiquid;
+          ++iPosLiquid;
         }
         step1();
         rotationDelay(fDelay);
@@ -551,12 +556,12 @@ void loop()
         if(bMotorLiquidDown)
         {
           iActualStep = iActualStep + 2;
-          --fPosLiquid;
+          --iPosLiquid;
         }
         else if(bMotorLiquidUp)
         {
           iActualStep = iActualStep - 2;
-          ++fPosLiquid;
+          ++iPosLiquid;
         }
         step3();
         rotationDelay(fDelay);
@@ -566,12 +571,12 @@ void loop()
         if(bMotorLiquidDown)
         {
           iActualStep = iActualStep + 2;
-          --fPosLiquid;
+          --iPosLiquid;
         }
         else if(bMotorLiquidUp)
         {
           iActualStep = iActualStep - 2;
-          ++fPosLiquid;
+          ++iPosLiquid;
         }
         step5();
         rotationDelay(fDelay);
@@ -582,19 +587,19 @@ void loop()
         if(bMotorLiquidDown)
         {
           iActualStep = 1;
-          --fPosLiquid;
+          --iPosLiquid;
         }
         else if(bMotorLiquidUp)
         {
           iActualStep = iActualStep - 2;
-          ++fPosLiquid;
+          ++iPosLiquid;
         }
         step7();
         rotationDelay(fDelay);
         break;
 
     }
-    Serial.println(fPosLiquid);
+    Serial.println(iPosLiquid);
   }
   else
   {

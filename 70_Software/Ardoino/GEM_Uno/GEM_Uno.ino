@@ -2,6 +2,7 @@
 //Commands
 const int GlassUP = 7;
 const int GlassDOWN = 8;
+const int MaxPos = 13;
 
 //Motor driver 1
 const int PWM11 = 3;
@@ -18,12 +19,14 @@ bool bMotorGlassDown = false;
 int iPosGlass = 0;
 
 //Values
-int iMaxHeightLiquid = 100;
-int iMaxHeightGlass = 100;
+int iPosRatio = 1;
 int iActualStep = 1;
 int iRatioSpeed = 360;
-float fPWMPbr = 40; //0.15121 * iRatioSpeed + 60;
-float fDelay = 1000; //(((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
+float fPWMPbr = 0.15121 * iRatioSpeed + 60;
+float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
+
+//Constantes
+const int iMaxHeightGlass = 120;
 
 /*******************************************/
 /*******************************************/
@@ -34,6 +37,7 @@ void setup()
 
   pinMode(GlassUP, INPUT);
   pinMode(GlassDOWN, INPUT);
+  pinMode(MaxPos, OUTPUT);
   
   pinMode(DIR11, OUTPUT);
   pinMode(DIR12, OUTPUT);
@@ -51,7 +55,25 @@ void loop()
 /*******************************************/
 //Read Inputs
 /*******************************************/
+//Command Motor Up
+if(digitalRead(GlassUP))
+{
+  bMotorGlassUp = true;
+}
+else
+{
+  bMotorGlassUp = false;
+}
 
+//Command Motor Down
+if(digitalRead(GlassDOWN))
+{
+  bMotorGlassDown = true;
+}
+else
+{
+  bMotorGlassDown = false;
+}
  
 /*******************************************/
 //Movement
@@ -65,119 +87,86 @@ void loop()
         if(bMotorGlassDown)
         {
           iActualStep = iActualStep + 2;
+          iPosGlass = iPosGlass - iPosRatio ;
         }
         else if(bMotorGlassUp)
         {
           iActualStep = 7;
+          ++iPosGlass;
         }
         step1();
         rotationDelay(fDelay);
-        break;
-
-      case 2:
-        if(bMotorGlassDown)
-        {
-          ++ iActualStep;
-        }
-        else if(bMotorGlassUp)
-        {
-          -- iActualStep;
-        }
-        step2();
-        delayMicroseconds(fDelay);
         break;
 
       case 3:
         if(bMotorGlassDown)
         {
           iActualStep = iActualStep + 2;
+          --iPosGlass;
         }
         else if(bMotorGlassUp)
         {
           iActualStep = iActualStep - 2;
+          ++iPosGlass;
         }
         step3();
         rotationDelay(fDelay);
-        break;
-
-      case 4:
-        if(bMotorGlassDown)
-        {
-          ++ iActualStep;
-        }
-        else if(bMotorGlassUp)
-        {
-          -- iActualStep;
-        }
-        step4();
-        delayMicroseconds(fDelay);
         break;
 
       case 5:
         if(bMotorGlassDown)
         {
           iActualStep = iActualStep + 2;
+          --iPosGlass;
         }
         else if(bMotorGlassUp)
         {
           iActualStep = iActualStep - 2;
+          ++iPosGlass;
         }
         step5();
         rotationDelay(fDelay);
         break;
 
-      case 6:
-        if(bMotorGlassDown)
-        {
-          ++ iActualStep;
-        }
-        else if(bMotorGlassUp)
-        {
-          -- iActualStep;
-        }
-        step6();
-        delayMicroseconds(fDelay);
-        break;
 
       case 7:
         if(bMotorGlassDown)
         {
           iActualStep = 1;
+          --iPosGlass;
         }
         else if(bMotorGlassUp)
         {
           iActualStep = iActualStep - 2;
+          ++iPosGlass;
         }
         step7();
         rotationDelay(fDelay);
         break;
 
-      case 8:
-        if(bMotorGlassDown)
-        {
-          iActualStep = 1;
-        }
-        else if(bMotorGlassUp)
-        {
-          -- iActualStep;
-        }
-        step8();
-        delayMicroseconds(fDelay);
-        break;
     }
-    Serial.println(iActualStep);
+    Serial.println(iPosGlass);
   }
   else
   {
-    digitalWrite(DIR11, LOW);
-    digitalWrite(DIR12, LOW);
-    digitalWrite(PWM11, LOW);
-    digitalWrite(PWM12, LOW);
+//    digitalWrite(DIR11, LOW);
+//    digitalWrite(DIR12, LOW);
+//    digitalWrite(PWM11, LOW);
+//    digitalWrite(PWM12, LOW);
     
   }
 
-
-
+/*******************************************/
+//Write Outputs
+/*******************************************/ 
+if(iPosGlass >= iMaxHeightGlass)
+{
+  digitalWrite(MaxPos, HIGH);  
+}
+else
+{
+  digitalWrite(MaxPos, LOW);  
+}
 
 /*******************************************/
 //Reseting
