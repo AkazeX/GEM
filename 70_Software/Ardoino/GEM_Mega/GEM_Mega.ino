@@ -288,8 +288,9 @@ void loop()
           //Wait for Placing
           case 2:
           //If the Galss and Liquid is in Place, advance
-            if(bGlassDown && bLiquidDown)
+            if(bGlassPresent && bLiquidPresent)
             {
+              delay(2000);
               iLastState = iState;
               iState = 3;
             }            
@@ -451,14 +452,7 @@ void loop()
               iLastState = iState;
               iState = 1; 
             }
-            break;     
-            
-          //ERROR
-          case 20:
-          iLastState = iState;
-              iState = 1;
-            break;
-        
+            break; 
         }
         break;
 
