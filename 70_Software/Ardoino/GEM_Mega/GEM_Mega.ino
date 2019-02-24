@@ -18,18 +18,12 @@ const int DIR12 = 10;
 
 /*******************************************/
 /*******************************************/
-//HMI
-//Communication
-int incomingBytes[7];
-int sendBytes[7];  
-int emptyBytes[7]; 
-
-
 //Operation
 bool bHMIStart = false; 
 bool bHMIStop = false;
 bool bHMIInit  = false;
 bool bHMIQuit  = false;
+bool bHMIEmergencyStop = false;
 
 //Handmode
 bool bManualLiquidUp = false;
@@ -53,7 +47,7 @@ int iMode = 0;
 bool bAutoOn = false;
 bool bInitPos = false;
 bool bInitialised = false;
-bool bError = false;
+bool bEmergencyStop = false;
 bool bBarn = false;
 
 bool bMotorLiquidUp = false;
@@ -72,6 +66,18 @@ int iLastState = 0;
  * 3: PLACING
  * 9: ERROR
  */
+
+
+//Communication
+bool bComGlasDown = false;
+bool bComGlasPresent = false;
+bool bComLiquidDown = false;
+bool bComLiquidPresent = false;
+int iComMode = 0;
+int iComState = 0;
+int incomingBytes[7];
+String str = ""; 
+
 
 //Values
 int iPosRatio = 1;
@@ -108,6 +114,7 @@ void setup()
   pinMode(PWM12, OUTPUT);
 
   TCCR2B = TCCR2B & 0b11111000 | 0x03;
+  //Serial1.write("AutoPict.Speed.val="+String(iRatioSpeed));
 
   //iMode = 2;
 }
@@ -116,6 +123,13 @@ void setup()
 void loop() 
 /*******************************************/
 {
+
+
+if(Serial.available() > 0)
+{
+  Serial.println(String(Serial.read()));
+}
+  
 
   //nStep.setValue(1);
 
@@ -140,24 +154,32 @@ void loop()
   {
     bModeUp   = (incomingBytes[2]==  23);
     bModeDown = (incomingBytes[2]==  24);
+    bHMIQuit  = (incomingBytes[2]==  26);
+    bHMIEmergencyStop = (incomingBytes[2]==  27);
   }
   else if (incomingBytes[1]== 1) //Page Hand
   {
     //Checking ID
     bManualGlassUp     = (incomingBytes[2]==  7 && incomingBytes[3]==  1);
     bManualGlassDown   = (incomingBytes[2]==  8 && incomingBytes[3]==  1);
-    bManualLiquidUp    = (incomingBytes[2]== 14 && incomingBytes[3]==  1);
-    bManualLiquidDown  = (incomingBytes[2]== 15 && incomingBytes[3]==  1);
+    bManualLiquidUp    = (incomingBytes[2]== 11 && incomingBytes[3]==  1);
+    bManualLiquidDown  = (incomingBytes[2]== 12 && incomingBytes[3]==  1);
+    bHMIQuit           = (incomingBytes[2]==  15);
+    bHMIEmergencyStop  = (incomingBytes[2]==  16);
   }
-  else if (incomingBytes[1]== 2) //Page Visu
+  else if (incomingBytes[1]== 2) //Page Beverage
   {
+    bHMIQuit          = (incomingBytes[2]==  12);
+    bHMIEmergencyStop = (incomingBytes[2]==  13);
     ;
   }
   else if (incomingBytes[1]== 3) //Page Auto
   {
     bHMIStart = (incomingBytes[2]==  7);
-    bHMIStop   = (incomingBytes[2]==  8);
+    bHMIStop  = (incomingBytes[2]==  8);
     bHMIInit  = (incomingBytes[2]== 11);
+    bHMIQuit  = (incomingBytes[2]== 19);
+    bHMIEmergencyStop = (incomingBytes[2]==  20);
   }
 
   //Reset received Data
@@ -217,6 +239,26 @@ void loop()
             bAutoOn = false;
           }
 
+  if(bHMIEmergencyStop)
+  {
+    bEmergencyStop = true;    
+  }
+
+  if(bEmergencyStop)
+  {
+    iMode = 0;
+    bInitialised = false;
+  }
+
+  if(bHMIQuit)
+  {
+    iMode = 0;    
+    iState = 0;
+    iShakes = 0;
+    bInitialised = false;
+    bEmergencyStop = false;    
+  }
+
 
 /*******************************************/
 //Main Part
@@ -232,6 +274,7 @@ void loop()
         bMotorLiquidDown = false;
         bMotorGlassUp = false;
         bMotorGlassDown = false;
+        bAutoOn = false;
         break;
 
       
@@ -607,30 +650,86 @@ void loop()
 /*******************************************/
 //Communication Write
 /*******************************************/
-  //Reset sending Data
-  sendBytes[0] = 0x65;
-  sendBytes[1] = 0x00;
-  sendBytes[2] = 0x17;
-  sendBytes[3] = 0x01;
-  sendBytes[4] = 0xFF;
-  sendBytes[5] = 0xFF;
-  sendBytes[6] = 0xFF;
-/*  
-if(Serial1.availableForWrite()>=7)
+
+if(Serial1.availableForWrite()>=16)
 {
-  if(bManualGlassUp)
+  //Sensor Glas unten
+  if(bGlassDown != bComGlasDown)
   {
-    Serial.write(sendBytes[0]);
-    Serial.write(sendBytes[1]);
-    Serial.write(sendBytes[2]);
-    Serial.write(sendBytes[3]);
-    Serial.write(sendBytes[4]);
-    Serial.write(sendBytes[5]);
-    Serial.write(sendBytes[6]); 
+    if(bGlassDown)
+    {
+      Serial1.write("StartPict.GlasDown.bco=2016");
+      bComGlasDown = true;
+    }
+    else
+    {
+      Serial1.write("StartPict.GlasDown.bco=48631");
+      bComGlasDown = false;
+    }
   }
+
+  //Sensor Glas bereit
+  if(bGlassPresent != bComGlasPresent)
+  {
+    if(bGlassPresent)
+    {
+      Serial1.write("StartPict.GlasPresent.bco=2016");
+      bComGlasPresent = true;
+    }
+    else
+    {
+      Serial1.write("StartPict.GlasPresent.bco=48631");
+      bComGlasPresent = false;
+    }
+  }
+
+  //Sensor Getränkt unten
+  if(bLiquidDown != bComLiquidDown)
+  {
+    if(bLiquidDown)
+    {
+      Serial1.write("StartPict.BottleDown.bco=2016");
+      bComLiquidDown = true;
+    }
+    else
+    {
+      Serial1.write("StartPict.BottleDown.bco=48631");
+      bComLiquidDown = false;
+    }
+  }
+
+  //Sensor Getränk bereit
+  if(bLiquidPresent != bComLiquidPresent)
+  {
+    if(bLiquidPresent)
+    {
+      Serial1.write("StartPict.BottlePresent.bco=2016");
+      bComLiquidPresent = true;
+    }
+    else
+    {
+      Serial1.write("StartPict.BottlePresent.bco=48631");
+      bComLiquidPresent = false;
+    }
+  }
+
+   //BetriebsModus
+  if(iMode != iComMode)
+  {
+    //Serial1.write("StartPict.Mode.val="+String(iMode));
+    iComMode = iMode;    
+  }
+
+  //Step
+  if(iState != iComState)
+  {
+    //Serial1.write("AutoPict.Step.val="+String(iState));
+    //Serial1.write("AutoPict.LastStep.val="+String(iLastState));
+    iComState = iState;    
+  }  
 }
 
-*/
+
 
 
 /*******************************************/
@@ -648,6 +747,8 @@ if(Serial1.availableForWrite()>=7)
   bHMIStart       = false;
   bHMIStop        = false;
   bHMIInit        = false;
+  bHMIQuit        = false;
+  bHMIEmergencyStop = false;
 }
 
 
