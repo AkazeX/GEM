@@ -48,6 +48,7 @@ bool bAutoOn = false;
 bool bInitPos = false;
 bool bInitialised = false;
 bool bEmergencyStop = false;
+bool bSparkling = false;
 bool bBarn = false;
 
 bool bMotorLiquidUp = false;
@@ -152,6 +153,7 @@ if(Serial.available() > 0)
   //Process
   if(incomingBytes[1]== 0) //Page Start
   {
+    //Checking ID
     bModeUp   = (incomingBytes[2]==  23);
     bModeDown = (incomingBytes[2]==  24);
     bHMIQuit  = (incomingBytes[2]==  26);
@@ -169,12 +171,32 @@ if(Serial.available() > 0)
   }
   else if (incomingBytes[1]== 2) //Page Beverage
   {
+    //Checking ID
+    if(incomingBytes[2]== 16 || incomingBytes[2]== 17 || incomingBytes[2]== 19)
+    {
+      bSparkling = false;
+      bBarn = false;
+    }
+    else if(incomingBytes[2]== 14 || incomingBytes[2]== 15 || incomingBytes[2]== 20 || incomingBytes[2]== 21)
+    {
+      bSparkling = true;
+      bBarn = false;
+    }
+    else if(incomingBytes[2]== 18 || incomingBytes[2]== 22)
+    {
+      bSparkling = true;
+      bBarn = true;
+    }
+    
+
+    
     bHMIQuit          = (incomingBytes[2]==  12);
     bHMIEmergencyStop = (incomingBytes[2]==  13);
     ;
   }
   else if (incomingBytes[1]== 3) //Page Auto
   {
+    //Checking ID
     bHMIStart = (incomingBytes[2]==  7);
     bHMIStop  = (incomingBytes[2]==  8);
     bHMIInit  = (incomingBytes[2]== 11);
