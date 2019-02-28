@@ -1,56 +1,60 @@
 //Pin numbers
-//Commands
-const int GlassUP = 7;
-const int GlassDOWN = 8;
-const int MaxPos = 13;
+//IN-OUT
+const int GlassUP = 7;      //Pin Number Command Glass Up
+const int GlassDOWN = 8;    //Pin Number Command Glass Down
+const int MaxPos = 13;      //Pin Number Singal max Positon reached
 
 //Motor driver 1
-const int PWM11 = 3;
-const int PWM12 = 11;
-const int DIR11 = 9;
-const int DIR12 = 10;
+const int PWM11 = 3;        //Pin Number PWM 1
+const int PWM12 = 11;       //Pin Number PWM 2
+const int DIR11 = 9;        //Pin Number DIR 1
+const int DIR12 = 10;       //Pin Number DIR 2
 
 
 /*******************************************/
 /*******************************************/
 //GlobalVariableList GVL
-bool bMotorGlassUp = false;
-bool bMotorGlassDown = false;
-int iPosGlass = 0;
+bool bMotorGlassUp = false;     //Command Motor drive glass up
+bool bMotorGlassDown = false;   //Command Motor drive glass down
+int iPosGlass = 0;              //Variabel current position
 
 //Values
-int iPosRatio = 1;
-int iActualStep = 1;
-int iRatioSpeed = 360;
-float fPWMPbr = 0.15121 * iRatioSpeed + 60;
-float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
+int iPosRatio = 1;               //Adjustment variable for positioning
+int iCurrentStep = 1;            //current step
+int iRatioSpeed = 360;           //speed value
+float fPWMPbr = 0.15121 * iRatioSpeed + 60; //PWM signal based on speed value
+float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; //Delay based on speed value
 
 //Constantes
-const int iMaxHeightGlass = 120;
+const int iMaxHeightGlass = 120;  //maximum hight 
 
 /*******************************************/
 /*******************************************/
 void setup() 
 {
-  // put your setup code here, to run once:
+  //start serial communication
   Serial.begin(9600);
 
-  pinMode(GlassUP, INPUT);
-  pinMode(GlassDOWN, INPUT);
+  //Declare Pin Mode IN/OUT
+  pinMode(GlassUP, INPUT_PULLUP);
+  pinMode(GlassDOWN, INPUT_PULLUP);
   pinMode(MaxPos, OUTPUT);
-  
+
+  //Declare Pin Mode PWM
   pinMode(DIR11, OUTPUT);
   pinMode(DIR12, OUTPUT);
   pinMode(PWM11, OUTPUT);
   pinMode(PWM12, OUTPUT);
 
+  //Change pin frequency of the PWM pins
   TCCR2B = TCCR2B & 0b11111000 | 0x03;
 
 }
 
 /*******************************************/
-void loop() 
+//Main Loop
 /*******************************************/
+void loop() 
 {
 /*******************************************/
 //Read Inputs
@@ -78,20 +82,21 @@ else
 /*******************************************/
 //Movement
 /*******************************************/
-   
+   //if a movement command is active execute the step, 
+   //change the position value and go to the next step
   if(bMotorGlassUp or bMotorGlassDown)
   {
-    switch(iActualStep)
+    switch(iCurrentStep)
     {
       case 1:
         if(bMotorGlassDown)
         {
-          iActualStep = iActualStep + 2;
+          iCurrentStep = iCurrentStep + 2;
           iPosGlass = iPosGlass - iPosRatio ;
         }
         else if(bMotorGlassUp)
         {
-          iActualStep = 7;
+          iCurrentStep = 7;
           ++iPosGlass;
         }
         step1();
@@ -101,12 +106,12 @@ else
       case 3:
         if(bMotorGlassDown)
         {
-          iActualStep = iActualStep + 2;
+          iCurrentStep = iCurrentStep + 2;
           --iPosGlass;
         }
         else if(bMotorGlassUp)
         {
-          iActualStep = iActualStep - 2;
+          iCurrentStep = iCurrentStep - 2;
           ++iPosGlass;
         }
         step3();
@@ -116,12 +121,12 @@ else
       case 5:
         if(bMotorGlassDown)
         {
-          iActualStep = iActualStep + 2;
+          iCurrentStep = iCurrentStep + 2;
           --iPosGlass;
         }
         else if(bMotorGlassUp)
         {
-          iActualStep = iActualStep - 2;
+          iCurrentStep = iCurrentStep - 2;
           ++iPosGlass;
         }
         step5();
@@ -132,12 +137,12 @@ else
       case 7:
         if(bMotorGlassDown)
         {
-          iActualStep = 1;
+          iCurrentStep = 1;
           --iPosGlass;
         }
         else if(bMotorGlassUp)
         {
-          iActualStep = iActualStep - 2;
+          iCurrentStep = iCurrentStep - 2;
           ++iPosGlass;
         }
         step7();

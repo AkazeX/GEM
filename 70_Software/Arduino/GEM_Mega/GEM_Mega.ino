@@ -4,37 +4,43 @@
 /*******************************************/
 //Inputs and Ouputs
 //Sensors
-bool bGlassDown = false;
-bool bLiquidDown = false;
-bool bLiquidPresent = false;
-bool bGlassPresent = false;
+bool bGlassDown = false;      //Sensor glass down
+bool bLiquidDown = false;     //Sensor bottle down
+bool bGlassPresent = false;   //Sensor glass present
 
 //Pin numbers
-//Motor driver 1
-const int PWM11 = 11;
-const int PWM12 = 12;
-const int DIR11 = 9;
-const int DIR12 = 10;
+//IN-OUT
+const int SensorGlassDown = 2;       //Pin Number Sensor Glass Up
+const int SensorLiquidDown = 3;      //Pin Number Sensor Liquid Up
+const int SensorGlassPressent = 4; //Pin Number Sensor Glass Present
+const int CommandGlassUp = 7;      //Pin Number Command Glass Up
+const int CommandGlassDown = 8;    //Pin Number Command Glass Down
+const int MaxPos = 13;             //Pin Number Singal max Positon reached
 
+//Motor driver 1
+const int PWM11 = 11;        //Pin Number PWM 1
+const int PWM12 = 112;       //Pin Number PWM 2
+const int DIR11 = 9;         //Pin Number DIR 1
+const int DIR12 = 10;        //Pin Number DIR 2
 /*******************************************/
 /*******************************************/
 //Operation
-bool bHMIStart = false; 
-bool bHMIStop = false;
-bool bHMIInit  = false;
-bool bHMIQuit  = false;
-bool bHMIEmergencyStop = false;
+bool bHMIStart = false;            //HMI button start
+bool bHMIStop = false;             //HMI button stop
+bool bHMIInit  = false;            //HMI button init
+bool bHMIQuit  = false;            //HMI button quit
+bool bHMIEmergencyStop = false;    //HMI button emergency stop
 
 //Handmode
-bool bManualLiquidUp = false;
-bool bManualLiquidDown = false;
-bool bManualGlassUp = false;
-bool bManualGlassDown = false;
+bool bHMIManualLiquidUp = false;    //HMI button hand mode bottle up
+bool bHMIManualLiquidDown = false;  //HMI button hand mode bottle down
+bool bHMIManualGlassUp = false;     //HMI button hand mode glass up
+bool bHMIManualGlassDown = false;   //HMI button hand mode glass down
 
 //Mode
-bool bModeUp = false;
-bool bModeDown = false;
-int iMode = 0;
+bool bHMIModeUp = false;    //HMI button mode up
+bool bHMIModeDown = false;  //HMI button mode down
+int iMode = 0;              //Current mode
 /* 0: Off
  * 1: Auto
  * 2: Manual
@@ -44,23 +50,23 @@ int iMode = 0;
 /*******************************************/
 /*******************************************/
 //GlobalVariableList GVL
-bool bAutoOn = false;
-bool bInitPos = false;
-bool bInitialised = false;
-bool bEmergencyStop = false;
-bool bSparkling = false;
-bool bBarn = false;
+bool bAutoOn = false;           //Automatic mode on
+bool bInitPos = false;          //Initial positon active
+bool bInitialised = false;      //Autoamtic mode is initialised
+bool bEmergencyStop = false;    //Emergency stop is active
+bool bSparkling = false;        //Bottle contains sparkling liquid
+bool bBarn = false;             //Bottler conatins liquid with barn
 
-bool bMotorLiquidUp = false;
-bool bMotorLiquidDown = false;
-bool bMotorGlassUp = false;
-bool bMotorGlassDown = false;
+bool bMotorLiquidUp = false;    //Command motor liquid up
+bool bMotorLiquidDown = false;  //Command motor liquid down
+bool bMotorGlassUp = false;     //Command motor glass up
+bool bMotorGlassDown = false;   //Command motor glas down
 
-int iPosLiquid = 0;
-int iPosGlass = 0;
-int iShakes = 0;
-int iState = 0; 
-int iLastState = 0;
+int iPosLiquid = 0;   //Positon of the bottle
+int iPosGlass = 0;    //Position of the glass
+int iShakes = 0;      //Times the bottle was shaked
+int iState = 0;       //Current state/step
+int iLastState = 0;   //Last state/step
 /* 0: INIT
  * 1: WAIT
  * 2: POURING
@@ -70,31 +76,32 @@ int iLastState = 0;
 
 
 //Communication
-bool bComGlasDown = false;
-bool bComGlasPresent = false;
-bool bComLiquidDown = false;
-bool bComLiquidPresent = false;
-int iComMode = 0;
-int iComState = 0;
-int incomingBytes[7];
-String str = ""; 
+bool bComGlasDown = false;      //State of the HMI object: glas down
+bool bComGlasPresent = false;   //State of the HMI object: glas present
+bool bComLiquidDown = false;    //State of the HMI object: liquid down
+
+int iComMode = 0;               //State of the HMI object: Mode     
+int iComState = 0;              //State of the HMI object: State
+int incomingBytes[7];           //Communication Bytes to read
+String str = "";                //string variable
 
 
 //Values
-int iPosRatio = 1;
-int iActualStep = 1;
-int iRatioSpeed = 360;
-float fPWMPbr = 0.15121 * iRatioSpeed + 60;
-float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2;
+int iPosRatio = 1;               //Adjustment variable for positioning
+int iCurrentStep = 1;            //current step
+int iRatioSpeed = 360;           //speed value
+float fPWMPbr = 0.15121 * iRatioSpeed + 60; //PWM signal based on speed value
+float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; //Delay based on speed value
+
 
 //Constantes
-const int cPosGlass = 250;
-const int cPosLiquid1 = 240;
-const int cPosLiquid2 = 280;
-const int cPosLiquid3 = 580;
-const int cDeltaPosShake = 20;
-const int iMaxHeightLiquid = 620;
-const int iMaxHeightGlass = 120;
+const int cPosGlass = 250;          //Constantes Positoin 1 of the glass
+const int cPosLiquid1 = 240;        //Constantes Positoin 1 of the bottle
+const int cPosLiquid2 = 280;        //Constantes Positoin 2 of the bottle
+const int cPosLiquid3 = 580;        //Constantes Positoin 3 of the bottle
+const int cDeltaPosShake = 20;      //Constantes Positoin difference to shake
+const int iMaxHeightLiquid = 620;   //Constantes maximum hight of the bootle
+const int iMaxHeightGlass = 120;    //Constantes maximum hight of the glass
 /*******************************************/
 /*******************************************/
 //Nextion Object
@@ -105,41 +112,93 @@ const int iMaxHeightGlass = 120;
 /*******************************************/
 void setup() 
 {
-  // put your setup code here, to run once:
+  //start serial communication 0
   Serial.begin(9600);
+  //start serial communication 1
   Serial1.begin(9600);
-
+  
+  //Declare Pin Mode IN/OUT
+  pinMode(SensorGlassDown,INPUT_PULLUP);
+  pinMode(SensorLiquidDown,INPUT_PULLUP);
+  pinMode(SensorGlassPressent,INPUT_PULLUP);
+  pinMode(MaxPos, INPUT_PULLUP);
+  pinMode(CommandGlassUp, OUTPUT);
+  pinMode(CommandGlassDown, OUTPUT);
+  
+  //Declare Pin Mode PWM
   pinMode(DIR11, OUTPUT);
   pinMode(DIR12, OUTPUT);
   pinMode(PWM11, OUTPUT);
   pinMode(PWM12, OUTPUT);
-
+  
+//Change pin frequency of the PWM pins
   TCCR2B = TCCR2B & 0b11111000 | 0x03;
-  //Serial1.write("AutoPict.Speed.val="+String(iRatioSpeed));
 
-  //iMode = 2;
 }
 
+
+/*******************************************/
+//Main Loop
 /*******************************************/
 void loop() 
-/*******************************************/
 {
+/*******************************************/
+//Read Inputs
+/*******************************************/  
+//Limit switch glass down
+if(digitalRead(SensorGlassDown))
+{
+  bGlassDown = true;
+}
+else
+{
+  bGlassDown = false;
+}
+
+//Limit switch liquid down
+if(digitalRead(SensorLiquidDown))
+{
+  bLiquidDown = true;
+}
+else
+{
+  bLiquidDown = false;
+}
+
+//Switch glass present
+if(digitalRead(SensorGlassPressent))
+{
+  bGlassPresent = true;
+}
+else
+{
+  bGlassPresent = false;
+}
+
+//Positon glass
+if(digitalRead(MaxPos))
+{
+  iPosGlass = iMaxHeightGlass;
+}
 
 
+/*******************************************/
+//Debug Channel
+/*******************************************/  
+//if there is data in the buffer print it to serial com 0
 if(Serial.available() > 0)
 {
   Serial.println(String(Serial.read()));
 }
   
 
-  //nStep.setValue(1);
-
 /*******************************************/
 //Communication Read
 /*******************************************/  
-  //Read
+  //if there are 7 bytes in the buffer read them
   if(Serial1.available() >= 7)
   {
+    //Copy them to the incomingBytes Array
     for(int i = 0; i < 7; i++)
     {
       if(Serial1.available() > 0)
@@ -150,22 +209,28 @@ if(Serial.available() > 0)
     }     
   }
 
-  //Process
+/*******************************************/
+//Communication Process
+/*******************************************/
+//incomingBytes[1] = page index  
+//incomingBytes[2] = object id  
+//incomingBytes[3] = state of the object
+  
   if(incomingBytes[1]== 0) //Page Start
   {
     //Checking ID
-    bModeUp   = (incomingBytes[2]==  23);
-    bModeDown = (incomingBytes[2]==  24);
+    bHMIModeUp   = (incomingBytes[2]==  23);
+    bHMIModeDown = (incomingBytes[2]==  24);
     bHMIQuit  = (incomingBytes[2]==  26);
     bHMIEmergencyStop = (incomingBytes[2]==  27);
   }
   else if (incomingBytes[1]== 1) //Page Hand
   {
     //Checking ID
-    bManualGlassUp     = (incomingBytes[2]==  7 && incomingBytes[3]==  1);
-    bManualGlassDown   = (incomingBytes[2]==  8 && incomingBytes[3]==  1);
-    bManualLiquidUp    = (incomingBytes[2]== 11 && incomingBytes[3]==  1);
-    bManualLiquidDown  = (incomingBytes[2]== 12 && incomingBytes[3]==  1);
+    bHMIManualGlassUp     = (incomingBytes[2]==  7 && incomingBytes[3]==  1);
+    bHMIManualGlassDown   = (incomingBytes[2]==  8 && incomingBytes[3]==  1);
+    bHMIManualLiquidUp    = (incomingBytes[2]== 11 && incomingBytes[3]==  1);
+    bHMIManualLiquidDown  = (incomingBytes[2]== 12 && incomingBytes[3]==  1);
     bHMIQuit           = (incomingBytes[2]==  15);
     bHMIEmergencyStop  = (incomingBytes[2]==  16);
   }
@@ -204,7 +269,7 @@ if(Serial.available() > 0)
     bHMIEmergencyStop = (incomingBytes[2]==  20);
   }
 
-  //Reset received Data
+  //Reset received Data after the variables are set
   incomingBytes[0] = 0;
   incomingBytes[1] = 0;
   incomingBytes[2] = 0;
@@ -218,65 +283,68 @@ if(Serial.available() > 0)
 //Update States
 /*******************************************/  
   //Mode
-  if(bModeUp && iMode < 3)
+  if(bHMIModeUp && iMode < 3)
   {
     ++iMode;
   }
-  else if(bModeDown && iMode < 0)
+  else if(bHMIModeDown && iMode < 0)
   {
     --iMode;
   }
 
-  //Position Glas
+  //Position Glas is 0 when the limit switch is reached
   if(bGlassDown)
   {
     iPosGlass = 0;
   }
 
-  //Positon Liquid
+  //Positon Liquid is 0 when the limit switch is reached
   if(bLiquidDown)
   {
     iPosLiquid = 0;
   }
 
-  //Init Position
+  //Init Position when both limit switches are active
   bInitPos = bGlassDown and bLiquidDown;
 
-  //Auto Online
+  //Auto Online active when the mode value is 1 and the start button is pressed
   if(bHMIStart && iMode == 1)
-          {
-            bAutoOn = true;        
-          }
-          else
-          {
-            bAutoOn = false;
-          }
+  {
+    bAutoOn = true;        
+  }
+  //if the stop button is pressed change reset the variable
+  else if(bHMIStop)
+  {
+    bAutoOn = false;
+  }
+  //if the Mode is changed reset the variable
+  else if(iMode != 1)
+  {
+    bAutoOn = false;
+  }
           
-          if(bHMIStop && iMode == 1)
-          {
-            bAutoOn = false;
-          }
-          else
-          {
-            bAutoOn = false;
-          }
-
+  //if the emrgency stop button is pressed set the marker bEmergencyStop
   if(bHMIEmergencyStop)
   {
     bEmergencyStop = true;    
   }
 
+  //If the marker bEmergencyStop is active reset the system
   if(bEmergencyStop)
   {
     iMode = 0;
+    bMotorLiquidUp = false;
+    bMotorLiquidDown = false;
+    bMotorGlassUp = false;
+    bMotorGlassDown = false;
     bInitialised = false;
   }
 
+  //if the quit button is pressed initialise the system
   if(bHMIQuit)
   {
     iMode = 0;    
     iState = 0;
-    iShakes = 0;
     bInitialised = false;
     bEmergencyStop = false;    
   }
@@ -291,12 +359,13 @@ if(Serial.available() > 0)
 //Off
 /*******************************************/   
       case 0:
-        //Reset Motor
+        //Reset Variables
         bMotorLiquidUp = false;
         bMotorLiquidDown = false;
         bMotorGlassUp = false;
         bMotorGlassDown = false;
         bAutoOn = false;
+        iState = 0;
         break;
 
       
@@ -305,7 +374,7 @@ if(Serial.available() > 0)
 /*******************************************/
       case 1:
 
-        //Reset Motor
+        //Reset Motor in advance to make sure they are always turned off befor entering the switch(iSate)
         bMotorLiquidUp = false;
         bMotorLiquidDown = false;
         bMotorGlassUp = false;
@@ -318,14 +387,17 @@ if(Serial.available() > 0)
           //INIT
           case 0:
           //Initialise the Process
+            //When initialised advance
             if(bInitialised)
             {
               iLastState = iState;
               iState = 1;
             }
+            //Reset the variables
             else
             {
               bAutoOn = false;
+              iShakes = 0;
               bInitialised = true;
             }
             break;
@@ -352,10 +424,11 @@ if(Serial.available() > 0)
 
           //Wait for Placing
           case 2:
-          //If the Galss and Liquid is in Place, advance
-            if(bGlassPresent && bLiquidPresent)
+          //If the Galss is in Place, advance
+            if(bGlassPresent)
             {
-              delay(2000);
+              //Wait 3 seconds
+              delay(3000);
               iLastState = iState;
               iState = 3;
             }            
@@ -512,7 +585,7 @@ if(Serial.available() > 0)
           //Remove Glass and Liquid
           case 10:
           //If bothe Objects are removed advance
-            if(bLiquidPresent && bGlassPresent)
+            if(not bGlassPresent)
             {
               iLastState = iState;
               iState = 1; 
@@ -527,17 +600,17 @@ if(Serial.available() > 0)
 //Manual Mode
 /*******************************************/
       case 2:
-        //Reset Motor
+        //Reset Motor in advance to make sure they are always turned off
         bMotorLiquidUp = false;
         bMotorLiquidDown = false;
         bMotorGlassUp = false;
         bMotorGlassDown = false;
       
         //Movement when pushed
-        bMotorLiquidUp = bManualLiquidUp and not (iPosLiquid >= iMaxHeightLiquid);
-        bMotorLiquidDown = bManualLiquidDown and not (bLiquidDown || iPosLiquid <= 0);
-        bMotorGlassUp = bManualGlassUp and not (iPosGlass >= iMaxHeightGlass);
-        bMotorGlassDown = bManualGlassDown and not (bGlassDown || iPosGlass <= 0);
+        bMotorLiquidUp = bHMIManualLiquidUp and not (iPosLiquid >= iMaxHeightLiquid);
+        bMotorLiquidDown = bHMIManualLiquidDown and not bLiquidDown;
+        bMotorGlassUp = bHMIManualGlassUp and not (iPosGlass >= iMaxHeightGlass);
+        bMotorGlassDown = bHMIManualGlassDown and not bGlassDown;
         break;
 
 
@@ -550,7 +623,7 @@ if(Serial.available() > 0)
       {
         bMotorLiquidUp = false;
       }
-      else if(bManualLiquidUp)
+      else if(bHMIManualLiquidUp)
       {
         bMotorLiquidUp = true;
       }
@@ -560,7 +633,7 @@ if(Serial.available() > 0)
       {
         bMotorLiquidDown = false;
       }
-      else if(bManualLiquidDown)
+      else if(bHMIManualLiquidDown)
       {
         bMotorLiquidDown = true;
       }
@@ -570,7 +643,7 @@ if(Serial.available() > 0)
       {
         bMotorGlassUp = false;
       }
-      else if(bManualGlassUp)
+      else if(bHMIManualGlassUp)
       {
         bMotorGlassUp = true;
       }
@@ -580,7 +653,7 @@ if(Serial.available() > 0)
       {
         bMotorGlassDown = false;
       }
-      else if(bManualGlassDown)
+      else if(bHMIManualGlassDown)
       {
         bMotorGlassDown = true;
       }
@@ -594,18 +667,19 @@ if(Serial.available() > 0)
    
   if(bMotorLiquidUp or bMotorLiquidDown)
   {
-    switch(iActualStep)
+    switch(iCurrentStep)
     {
       case 1:
         if(bMotorLiquidDown)
         {
-          iActualStep = iActualStep + 2;
+          iCurrentStep = iCurrentStep + 2;
           iPosLiquid = iPosLiquid - iPosRatio ;
         }
         else if(bMotorLiquidUp)
         {
-          iActualStep = 7;
-          ++iPosLiquid;
+          iCurrentStep = 7;
+          iPosLiquid = iPosLiquid + iPosRatio ;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step1();
         rotationDelay(fDelay);
@@ -614,13 +688,14 @@ if(Serial.available() > 0)
       case 3:
         if(bMotorLiquidDown)
         {
-          iActualStep = iActualStep + 2;
-          --iPosLiquid;
+          iCurrentStep = iCurrentStep + 2;
+          iPosLiquid = iPosLiquid - iPosRatio ;
         }
         else if(bMotorLiquidUp)
         {
-          iActualStep = iActualStep - 2;
-          ++iPosLiquid;
+          iCurrentStep = iCurrentStep - 2;
+          iPosLiquid = iPosLiquid + iPosRatio ;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step3();
         rotationDelay(fDelay);
@@ -629,13 +704,14 @@ if(Serial.available() > 0)
       case 5:
         if(bMotorLiquidDown)
         {
-          iActualStep = iActualStep + 2;
-          --iPosLiquid;
+          iCurrentStep = iCurrentStep + 2;
+          iPosLiquid = iPosLiquid - iPosRatio ;
         }
         else if(bMotorLiquidUp)
         {
-          iActualStep = iActualStep - 2;
-          ++iPosLiquid;
+          iCurrentStep = iCurrentStep - 2;
+          iPosLiquid = iPosLiquid + iPosRatio ;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step5();
         rotationDelay(fDelay);
@@ -645,13 +721,14 @@ if(Serial.available() > 0)
       case 7:
         if(bMotorLiquidDown)
         {
-          iActualStep = 1;
-          --iPosLiquid;
+          iCurrentStep = 1;
+          iPosLiquid = iPosLiquid - iPosRatio ;
         }
         else if(bMotorLiquidUp)
         {
-          iActualStep = iActualStep - 2;
-          ++iPosLiquid;
+          iCurrentStep = iCurrentStep - 2;
+          iPosLiquid = iPosLiquid + iPosRatio ;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step7();
         rotationDelay(fDelay);
@@ -672,10 +749,11 @@ if(Serial.available() > 0)
 /*******************************************/
 //Communication Write
 /*******************************************/
-
+//When there is enough place to write a telegram
 if(Serial1.availableForWrite()>=16)
 {
-  //Sensor Glas unten
+  //Check if the plc stat and the HMI object state are different, 
+  //sende a telegramm to update the object state if there is a difference
   if(bGlassDown != bComGlasDown)
   {
     if(bGlassDown)
@@ -690,7 +768,8 @@ if(Serial1.availableForWrite()>=16)
     }
   }
 
-  //Sensor Glas bereit
+  //Check if the plc stat and the HMI object state are different, 
+  //sende a telegramm to update the object state if there is a difference
   if(bGlassPresent != bComGlasPresent)
   {
     if(bGlassPresent)
@@ -705,7 +784,8 @@ if(Serial1.availableForWrite()>=16)
     }
   }
 
-  //Sensor Getränkt unten
+  //Check if the plc stat and the HMI object state are different, 
+  //sende a telegramm to update the object state if there is a difference
   if(bLiquidDown != bComLiquidDown)
   {
     if(bLiquidDown)
@@ -720,29 +800,17 @@ if(Serial1.availableForWrite()>=16)
     }
   }
 
-  //Sensor Getränk bereit
-  if(bLiquidPresent != bComLiquidPresent)
-  {
-    if(bLiquidPresent)
-    {
-      Serial1.write("StartPict.BottlePresent.bco=2016");
-      bComLiquidPresent = true;
-    }
-    else
-    {
-      Serial1.write("StartPict.BottlePresent.bco=48631");
-      bComLiquidPresent = false;
-    }
-  }
 
-   //BetriebsModus
+  //Check if the plc stat and the HMI object state are different, 
+  //sende a telegramm to update the object state if there is a difference
   if(iMode != iComMode)
   {
     //Serial1.write("StartPict.Mode.val="+String(iMode));
     iComMode = iMode;    
   }
 
-  //Step
+  //Check if the plc stat and the HMI object state are different, 
+  //sende a telegramm to update the object state if there is a difference
   if(iState != iComState)
   {
     //Serial1.write("AutoPict.Step.val="+String(iState));
@@ -757,15 +825,15 @@ if(Serial1.availableForWrite()>=16)
 /*******************************************/
 //Reseting
 /*******************************************/ 
-  //Reset Motor
+  //Reset Motor (after the movement)
   bMotorLiquidUp = false;
   bMotorLiquidDown = false;
   bMotorGlassUp = false;
   bMotorGlassDown = false;
   
-  //Reset HMI
-  bModeUp         = false;
-  bModeDown       = false;
+  //Reset HMI buttons (only one cycle active)
+  bHMIModeUp         = false;
+  bHMIModeDown       = false;
   bHMIStart       = false;
   bHMIStop        = false;
   bHMIInit        = false;
