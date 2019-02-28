@@ -163,7 +163,7 @@ if(not digitalRead(SensorGlassDown))
   }
   else if(iPosGlass >= iMaxHeightGlass)
   {
-    fPWMPbr = 45;
+    fPWMPbr = 30;
     //Call last currentstep again to hold it on the position
     switch(iCurrentStep)
     {
