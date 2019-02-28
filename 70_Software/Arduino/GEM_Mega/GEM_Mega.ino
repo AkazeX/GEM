@@ -276,7 +276,7 @@ if(Serial.available() > 0)
   incomingBytes[5] = 0;
   incomingBytes[6] = 0;
 
-
+Serial.println(iState);
 /*******************************************/
 //Update States
 /*******************************************/  
@@ -425,11 +425,13 @@ if(Serial.available() > 0)
           //If the Galss is in Place, advance
             if(bGlassPresent)
             {
+              Serial.println(iState);
               //Wait 3 seconds
               delay(3000);
               iLastState = iState;
               iState = 3;
-            }            
+            }
+            break;            
 
           //Lift to Start Position
           case 3:
@@ -500,20 +502,24 @@ if(Serial.available() > 0)
           //Shake Bottle
           case 6:
             //If the Liquid reaches the Position, change Motordirection
-            if(iPosLiquid <= (cPosLiquid1 - cDeltaPosShake))
+            if(iPosLiquid <= (cPosLiquid1 + cDeltaPosShake))
             {
               bMotorLiquidUp = true;
               bMotorLiquidDown = false;                           
             }
             //If the Liquid reaches the Position, change Motordirection
-            else if(iPosLiquid >= (cPosLiquid1 + cDeltaPosShake))
+            else if(iPosLiquid > (cPosLiquid1 - cDeltaPosShake))
             {
               bMotorLiquidUp = false;
               bMotorLiquidDown = true;
-              ++iShakes ;                          
+            }                           
+
+            if(iPosLiquid <= (cPosLiquid1 - cDeltaPosShake))
+            {
+              ++iShakes ;
             }
 
-            //After 5 Times advance
+             //After 5 Times advance
              if(iShakes == 5)
              {
               iLastState = iState;
@@ -733,7 +739,7 @@ if(Serial.available() > 0)
   }
   else if(iPosLiquid >= cPosLiquid3)
   {
-    fPWMPbr = 45;
+    fPWMPbr = 30;
     //Call last currentstep again to hold it on the position
     switch(iCurrentStep)
     {
@@ -860,8 +866,6 @@ else
 {
   digitalWrite(CommandGlassDown, LOW);  
 }
-
-Serial.println(bGlassPresent);
 
 /*******************************************/
 //Reseting
