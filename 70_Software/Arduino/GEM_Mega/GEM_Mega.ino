@@ -19,7 +19,7 @@ const int MaxPos = 13;             //Pin Number Singal max Positon reached
 
 //Motor driver 1
 const int PWM11 = 11;        //Pin Number PWM 1
-const int PWM12 = 112;       //Pin Number PWM 2
+const int PWM12 = 12;       //Pin Number PWM 2
 const int DIR11 = 9;         //Pin Number DIR 1
 const int DIR12 = 10;        //Pin Number DIR 2
 /*******************************************/
@@ -89,19 +89,19 @@ String str = "";                //string variable
 //Values
 int iPosRatio = 1;               //Adjustment variable for positioning
 int iCurrentStep = 1;            //current step
-int iRatioSpeed = 360;           //speed value
-float fPWMPbr = 0.15121 * iRatioSpeed + 60; //PWM signal based on speed value
+int iRatioSpeed = 180;           //speed value
+float fPWMPbr = 0.15121 * iRatioSpeed + 50; //PWM signal based on speed value
 float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; //Delay based on speed value
 
 
 //Constantes
-const int cPosGlass = 250;          //Constantes Positoin 1 of the glass
-const int cPosLiquid1 = 240;        //Constantes Positoin 1 of the bottle
-const int cPosLiquid2 = 280;        //Constantes Positoin 2 of the bottle
-const int cPosLiquid3 = 580;        //Constantes Positoin 3 of the bottle
-const int cDeltaPosShake = 20;      //Constantes Positoin difference to shake
-const int iMaxHeightLiquid = 620;   //Constantes maximum hight of the bootle
-const int iMaxHeightGlass = 120;    //Constantes maximum hight of the glass
+const int cPosGlass = 300;          //Constantes Positoin 1 of the glass
+const int cPosLiquid1 = 125;        //Constantes Positoin 1 of the bottle
+const int cPosLiquid2 = 315;        //Constantes Positoin 2 of the bottle
+const int cPosLiquid3 = 500;        //Constantes Positoin 3 of the bottle
+const int cDeltaPosShake = 10;      //Constantes Positoin difference to shake
+const int iMaxHeightLiquid = 510 ;   //Constantes maximum hight of the bootle
+const int iMaxHeightGlass = cPosGlass;    //Constantes maximum hight of the glass
 /*******************************************/
 /*******************************************/
 //Nextion Object
@@ -148,40 +148,38 @@ void loop()
 //Limit switch glass down
 if(digitalRead(SensorGlassDown))
 {
-  bGlassDown = true;
+  bGlassDown = false;
 }
 else
 {
-  bGlassDown = false;
+  bGlassDown = true;
 }
 
 //Limit switch liquid down
 if(digitalRead(SensorLiquidDown))
 {
-  bLiquidDown = true;
+  bLiquidDown = false;
 }
 else
 {
-  bLiquidDown = false;
+  bLiquidDown = true;
 }
 
 //Switch glass present
 if(digitalRead(SensorGlassPressent))
 {
-  bGlassPresent = true;
+  bGlassPresent = false;
 }
 else
 {
-  bGlassPresent = false;
+  bGlassPresent = true;
 }
 
 //Positon glass
 if(digitalRead(MaxPos))
 {
-  iPosGlass = iMaxHeightGlass;
+  iPosGlass = cPosGlass;
 }
-
-
 /*******************************************/
 //Debug Channel
 /*******************************************/  
@@ -563,15 +561,15 @@ if(Serial.available() > 0)
             bMotorLiquidDown = true;
 
             //If the Liquid reached the Position, stop the Motor
-            if(iPosLiquid == 0 || bLiquidDown)
+            if(bLiquidDown)
             {
               bMotorLiquidDown = false;
             }
 
             //If the Glass reached the Position, stop the Motor
-            if(iPosGlass == 0 || bGlassDown)
+            if(bGlassDown)
             {
-              bMotorLiquidDown = false;
+              bMotorGlassDown = false;
             }
 
             //If Init Position advance
@@ -664,9 +662,11 @@ if(Serial.available() > 0)
 /*******************************************/
 //Movement
 /*******************************************/
-   
+  //if a movement command is active execute the step, 
+   //change the position value and go to the next step
   if(bMotorLiquidUp or bMotorLiquidDown)
   {
+    fPWMPbr = 0.15121 * iRatioSpeed + 50;
     switch(iCurrentStep)
     {
       case 1:
@@ -679,7 +679,6 @@ if(Serial.available() > 0)
         {
           iCurrentStep = 7;
           iPosLiquid = iPosLiquid + iPosRatio ;
-          iPosGlass = iPosGlass + iPosRatio ;
         }
         step1();
         rotationDelay(fDelay);
@@ -695,7 +694,6 @@ if(Serial.available() > 0)
         {
           iCurrentStep = iCurrentStep - 2;
           iPosLiquid = iPosLiquid + iPosRatio ;
-          iPosGlass = iPosGlass + iPosRatio ;
         }
         step3();
         rotationDelay(fDelay);
@@ -711,7 +709,6 @@ if(Serial.available() > 0)
         {
           iCurrentStep = iCurrentStep - 2;
           iPosLiquid = iPosLiquid + iPosRatio ;
-          iPosGlass = iPosGlass + iPosRatio ;
         }
         step5();
         rotationDelay(fDelay);
@@ -727,24 +724,45 @@ if(Serial.available() > 0)
         else if(bMotorLiquidUp)
         {
           iCurrentStep = iCurrentStep - 2;
-          iPosLiquid = iPosLiquid + iPosRatio ;
-          iPosGlass = iPosGlass + iPosRatio ;
+         iPosLiquid = iPosLiquid + iPosRatio ;
         }
         step7();
         rotationDelay(fDelay);
         break;
-
     }
-    Serial.println(iPosLiquid);
+  }
+  else if(iPosLiquid >= cPosLiquid3)
+  {
+    fPWMPbr = 45;
+    //Call last currentstep again to hold it on the position
+    switch(iCurrentStep)
+    {
+      case 1:        
+        step1();
+        break;
+
+      case 3:
+        step3();
+        break;
+
+      case 5:
+        step5();
+        break;
+
+
+      case 7:
+        step7();
+        break;
+    }    
   }
   else
   {
-//    digitalWrite(DIR11, LOW);
-//    digitalWrite(DIR12, LOW);
-//    digitalWrite(PWM11, LOW);
-//    digitalWrite(PWM12, LOW);
-    
+    digitalWrite(DIR11, LOW);
+    digitalWrite(DIR12, LOW);
+    digitalWrite(PWM11, LOW);
+    digitalWrite(PWM12, LOW);
   }
+  
 
 /*******************************************/
 //Communication Write
@@ -820,7 +838,30 @@ if(Serial1.availableForWrite()>=16)
 }
 
 
+/*******************************************/
+//Write Outputs
+/*******************************************/ 
+//write Motor Glass up
+if(bMotorGlassUp)
+{
+  digitalWrite(CommandGlassUp, HIGH);  
+}
+else
+{
+  digitalWrite(CommandGlassUp, LOW);  
+}
 
+//write Motor Glass down
+if(bMotorGlassDown)
+{
+  digitalWrite(CommandGlassDown, HIGH);  
+}
+else
+{
+  digitalWrite(CommandGlassDown, LOW);  
+}
+
+Serial.println(bGlassPresent);
 
 /*******************************************/
 //Reseting

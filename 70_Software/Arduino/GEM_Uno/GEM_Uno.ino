@@ -1,8 +1,9 @@
 //Pin numbers
 //IN-OUT
-const int GlassUP = 7;      //Pin Number Command Glass Up
-const int GlassDOWN = 8;    //Pin Number Command Glass Down
-const int MaxPos = 13;      //Pin Number Singal max Positon reached
+const int GlassUP = 7;        //Pin Number Command Glass Up
+const int GlassDOWN = 8;      //Pin Number Command Glass Down
+const int SensorGlassDown = 12;//Pin Number Sensor Glass Up
+const int MaxPos = 13;        //Pin Number Singal max Positon reached
 
 //Motor driver 1
 const int PWM11 = 3;        //Pin Number PWM 1
@@ -21,12 +22,12 @@ int iPosGlass = 0;              //Variabel current position
 //Values
 int iPosRatio = 1;               //Adjustment variable for positioning
 int iCurrentStep = 1;            //current step
-int iRatioSpeed = 360;           //speed value
-float fPWMPbr = 0.15121 * iRatioSpeed + 60; //PWM signal based on speed value
+int iRatioSpeed = 180;           //speed value
+float fPWMPbr = 0.15121 * iRatioSpeed + 50; //PWM signal based on speed value
 float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; //Delay based on speed value
 
 //Constantes
-const int iMaxHeightGlass = 120;  //maximum hight 
+const int iMaxHeightGlass = 300;  //maximum hight 
 
 /*******************************************/
 /*******************************************/
@@ -36,8 +37,9 @@ void setup()
   Serial.begin(9600);
 
   //Declare Pin Mode IN/OUT
-  pinMode(GlassUP, INPUT_PULLUP);
-  pinMode(GlassDOWN, INPUT_PULLUP);
+  pinMode(GlassUP, INPUT);
+  pinMode(GlassDOWN, INPUT);
+  pinMode(SensorGlassDown,INPUT_PULLUP);
   pinMode(MaxPos, OUTPUT);
 
   //Declare Pin Mode PWM
@@ -78,7 +80,13 @@ else
 {
   bMotorGlassDown = false;
 }
- 
+
+//Limit switch glass down
+if(not digitalRead(SensorGlassDown))
+{
+  iPosGlass = 0;
+}
+
 /*******************************************/
 //Movement
 /*******************************************/
@@ -86,6 +94,7 @@ else
    //change the position value and go to the next step
   if(bMotorGlassUp or bMotorGlassDown)
   {
+    fPWMPbr = 0.15121 * iRatioSpeed + 50;
     switch(iCurrentStep)
     {
       case 1:
@@ -97,7 +106,7 @@ else
         else if(bMotorGlassUp)
         {
           iCurrentStep = 7;
-          ++iPosGlass;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step1();
         rotationDelay(fDelay);
@@ -107,12 +116,12 @@ else
         if(bMotorGlassDown)
         {
           iCurrentStep = iCurrentStep + 2;
-          --iPosGlass;
+          iPosGlass = iPosGlass - iPosRatio ;
         }
         else if(bMotorGlassUp)
         {
           iCurrentStep = iCurrentStep - 2;
-          ++iPosGlass;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step3();
         rotationDelay(fDelay);
@@ -122,12 +131,12 @@ else
         if(bMotorGlassDown)
         {
           iCurrentStep = iCurrentStep + 2;
-          --iPosGlass;
+          iPosGlass = iPosGlass - iPosRatio ;
         }
         else if(bMotorGlassUp)
         {
           iCurrentStep = iCurrentStep - 2;
-          ++iPosGlass;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step5();
         rotationDelay(fDelay);
@@ -138,12 +147,12 @@ else
         if(bMotorGlassDown)
         {
           iCurrentStep = 1;
-          --iPosGlass;
+          iPosGlass = iPosGlass - iPosRatio ;
         }
         else if(bMotorGlassUp)
         {
           iCurrentStep = iCurrentStep - 2;
-          ++iPosGlass;
+          iPosGlass = iPosGlass + iPosRatio ;
         }
         step7();
         rotationDelay(fDelay);
@@ -152,14 +161,40 @@ else
     }
     Serial.println(iPosGlass);
   }
+  else if(iPosGlass >= iMaxHeightGlass)
+  {
+    fPWMPbr = 45;
+    //Call last currentstep again to hold it on the position
+    switch(iCurrentStep)
+    {
+      case 1:        
+        step1();
+        break;
+
+      case 3:
+        step3();
+        break;
+
+      case 5:
+        step5();
+        break;
+
+
+      case 7:
+        step7();
+        break;
+    }    
+  }
   else
   {
-//    digitalWrite(DIR11, LOW);
-//    digitalWrite(DIR12, LOW);
-//    digitalWrite(PWM11, LOW);
-//    digitalWrite(PWM12, LOW);
-    
+    digitalWrite(DIR11, LOW);
+    digitalWrite(DIR12, LOW);
+    digitalWrite(PWM11, LOW);
+    digitalWrite(PWM12, LOW);
   }
+      
+  
+    
 
 /*******************************************/
 //Write Outputs
