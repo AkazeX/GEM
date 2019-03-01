@@ -212,6 +212,7 @@ if(Serial.available() > 0)
 /*******************************************/
 //Communication Process
 /*******************************************/
+//Evaluate the Array
 //incomingBytes[1] = page index  
 //incomingBytes[2] = object id  
 //incomingBytes[3] = state of the object
@@ -260,9 +261,7 @@ if(Serial.available() > 0)
     {
       bBarm = not bBarm;
     }
-    
-
-    
+        
     bHMIQuit          = (incomingBytes[2]==  12);
     bHMIEmergencyStop = (incomingBytes[2]==  13);
     ;
