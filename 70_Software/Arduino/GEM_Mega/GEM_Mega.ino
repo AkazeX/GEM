@@ -55,7 +55,9 @@ bool bInitPos = false;          //Initial positon active
 bool bInitialised = false;      //Autoamtic mode is initialised
 bool bEmergencyStop = false;    //Emergency stop is active
 bool bSparkling = false;        //Bottle contains sparkling liquid
-bool bBarn = false;             //Bottler conatins liquid with barn
+bool bBarm = false;             //Bottler conatins liquid with barn
+bool bShakeCounted = false;     //Bottle shake is counted
+bool bShakeDown = false;        //Bottle shaking marker
 
 bool bMotorLiquidUp = false;    //Command motor liquid up
 bool bMotorLiquidDown = false;  //Command motor liquid down
@@ -64,7 +66,7 @@ bool bMotorGlassDown = false;   //Command motor glas down
 
 int iPosLiquid = 0;   //Positon of the bottle
 int iPosGlass = 0;    //Position of the glass
-int iShakes = 0;      //Times the bottle was shaked
+int iShakes = 0;      //Times the bottle was shaked        
 int iState = 0;       //Current state/step
 int iLastState = 0;   //Last state/step
 /* 0: INIT
@@ -99,7 +101,7 @@ const int cPosGlass = 300;          //Constantes Positoin 1 of the glass
 const int cPosLiquid1 = 125;        //Constantes Positoin 1 of the bottle
 const int cPosLiquid2 = 315;        //Constantes Positoin 2 of the bottle
 const int cPosLiquid3 = 500;        //Constantes Positoin 3 of the bottle
-const int cDeltaPosShake = 10;      //Constantes Positoin difference to shake
+const int cDeltaPosShake = 30;      //Constantes Positoin difference to shake
 const int iMaxHeightLiquid = 510 ;   //Constantes maximum hight of the bootle
 const int iMaxHeightGlass = cPosGlass;    //Constantes maximum hight of the glass
 /*******************************************/
@@ -202,11 +204,11 @@ if(Serial.available() > 0)
       if(Serial1.available() > 0)
       {
         incomingBytes[i] =  Serial1.read(); 
-        Serial.println(incomingBytes[i], HEX);               
+        //Serial.println(incomingBytes[i], HEX);
+                    
       }   
-    }     
+    }        
   }
-
 /*******************************************/
 //Communication Process
 /*******************************************/
@@ -220,7 +222,7 @@ if(Serial.available() > 0)
     bHMIModeUp   = (incomingBytes[2]==  23);
     bHMIModeDown = (incomingBytes[2]==  24);
     bHMIQuit  = (incomingBytes[2]==  26);
-    bHMIEmergencyStop = (incomingBytes[2]==  27);
+    bHMIEmergencyStop = (incomingBytes[2]==  27);    
   }
   else if (incomingBytes[1]== 1) //Page Hand
   {
@@ -238,17 +240,25 @@ if(Serial.available() > 0)
     if(incomingBytes[2]== 16 || incomingBytes[2]== 17 || incomingBytes[2]== 19)
     {
       bSparkling = false;
-      bBarn = false;
+      bBarm = false;
     }
     else if(incomingBytes[2]== 14 || incomingBytes[2]== 15 || incomingBytes[2]== 20 || incomingBytes[2]== 21)
     {
       bSparkling = true;
-      bBarn = false;
+      bBarm = false;
     }
     else if(incomingBytes[2]== 18 || incomingBytes[2]== 22)
     {
       bSparkling = true;
-      bBarn = true;
+      bBarm = true;
+    }
+    else if(incomingBytes[2]== 8)
+    {
+      bSparkling = not bSparkling;      
+    }
+    else if (incomingBytes[2]== 11)
+    {
+      bBarm = not bBarm;
     }
     
 
@@ -276,7 +286,6 @@ if(Serial.available() > 0)
   incomingBytes[5] = 0;
   incomingBytes[6] = 0;
 
-Serial.println(iState);
 /*******************************************/
 //Update States
 /*******************************************/  
@@ -285,9 +294,10 @@ Serial.println(iState);
   {
     ++iMode;
   }
-  else if(bHMIModeDown && iMode < 0)
+  else if(bHMIModeDown && iMode > 0)
   {
     --iMode;
+     
   }
 
   //Position Glas is 0 when the limit switch is reached
@@ -315,11 +325,13 @@ Serial.println(iState);
   {
     bAutoOn = false;
   }
-  //if the Mode is changed reset the variable
-  else if(iMode != 1)
+   //if the Mode is changed reset the variable
+   else if(iMode != 1)
   {
     bAutoOn = false;
   }
+ 
+
           
   //if the emrgency stop button is pressed set the marker bEmergencyStop
   if(bHMIEmergencyStop)
@@ -425,7 +437,6 @@ Serial.println(iState);
           //If the Galss is in Place, advance
             if(bGlassPresent)
             {
-              Serial.println(iState);
               //Wait 3 seconds
               delay(3000);
               iLastState = iState;
@@ -470,7 +481,7 @@ Serial.println(iState);
               bMotorLiquidUp = false;
 
               //Considering the Barn advance
-              if(bBarn)
+              if(bBarm)
               {
                 delay(4000);
                 iLastState = iState;
@@ -501,27 +512,40 @@ Serial.println(iState);
 
           //Shake Bottle
           case 6:
+          iRatioSpeed = 280;
             //If the Liquid reaches the Position, change Motordirection
-            if(iPosLiquid <= (cPosLiquid1 + cDeltaPosShake))
+            if(iPosLiquid <= (cPosLiquid1 + cDeltaPosShake) and not bShakeDown)
             {
               bMotorLiquidUp = true;
               bMotorLiquidDown = false;                           
             }
+            //if the upper positionis reached set marker
+            else if(iPosLiquid >= (cPosLiquid1 + cDeltaPosShake))
+            {
+              bShakeDown = true;
+              bShakeCounted = false;              
+            }
+            
             //If the Liquid reaches the Position, change Motordirection
-            else if(iPosLiquid > (cPosLiquid1 - cDeltaPosShake))
+            if(iPosLiquid >= (cPosLiquid1 - cDeltaPosShake)and bShakeDown)
             {
               bMotorLiquidUp = false;
               bMotorLiquidDown = true;
-            }                           
-
-            if(iPosLiquid <= (cPosLiquid1 - cDeltaPosShake))
+            }
+            //if the lower positionis reached set marker
+            else if (iPosLiquid <= (cPosLiquid1 - cDeltaPosShake))            
             {
-              ++iShakes ;
+              bShakeDown = true;
+              bShakeCounted = true;
+              ++iShakes ;              
             }
 
              //After 5 Times advance
              if(iShakes == 5)
              {
+              bShakeDown = false;
+              iShakes = 0;
+              iRatioSpeed = 180;
               iLastState = iState;
               iState = 7;               
              }
@@ -544,9 +568,9 @@ Serial.println(iState);
           //Empty the Bottle
           case 8:
             //Wait a certain time and advance
-            if(bBarn)
+            if(bBarm)
             {
-              delay(1000);
+              delay(2000);
               bMotorLiquidUp = false;
               iLastState = iState;
               iState = 9;
@@ -870,12 +894,6 @@ else
 /*******************************************/
 //Reseting
 /*******************************************/ 
-  //Reset Motor (after the movement)
-  bMotorLiquidUp = false;
-  bMotorLiquidDown = false;
-  bMotorGlassUp = false;
-  bMotorGlassDown = false;
-  
   //Reset HMI buttons (only one cycle active)
   bHMIModeUp         = false;
   bHMIModeDown       = false;
