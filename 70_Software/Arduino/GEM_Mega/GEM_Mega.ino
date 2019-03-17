@@ -97,12 +97,12 @@ float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; //Delay 
 
 
 //Constantes
-const int cPosGlass = 300;          //Constantes Positoin 1 of the glass
+const int cPosGlass = 240;          //Constantes Positoin 1 of the glass
 const int cPosLiquid1 = 125;        //Constantes Positoin 1 of the bottle
 const int cPosLiquid2 = 315;        //Constantes Positoin 2 of the bottle
 const int cPosLiquid3 = 500;        //Constantes Positoin 3 of the bottle
 const int cDeltaPosShake = 30;      //Constantes Positoin difference to shake
-const int iMaxHeightLiquid = 510 ;   //Constantes maximum hight of the bootle
+const int iMaxHeightLiquid = 500 ;   //Constantes maximum hight of the bootle
 const int iMaxHeightGlass = cPosGlass;    //Constantes maximum hight of the glass
 /*******************************************/
 /*******************************************/
@@ -144,6 +144,7 @@ void setup()
 /*******************************************/
 void loop() 
 {
+  Serial.println(iPosLiquid);
 /*******************************************/
 //Read Inputs
 /*******************************************/  
@@ -511,7 +512,7 @@ if(Serial.available() > 0)
 
           //Shake Bottle
           case 6:
-          iRatioSpeed = 280;
+          iRatioSpeed = 340;
             //If the Liquid reaches the Position, change Motordirection
             if(iPosLiquid <= (cPosLiquid1 + cDeltaPosShake) and not bShakeDown)
             {

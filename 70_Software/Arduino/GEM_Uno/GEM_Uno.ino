@@ -27,7 +27,7 @@ float fPWMPbr = 0.15121 * iRatioSpeed + 50; //PWM signal based on speed value
 float fDelay = (((1000 / ((iRatioSpeed / 360) * 100)) / 2) * 1000) / 2; //Delay based on speed value
 
 //Constantes
-const int iMaxHeightGlass = 300;  //maximum hight 
+const int iMaxHeightGlass = 200;  //maximum hight 
 
 /*******************************************/
 /*******************************************/
