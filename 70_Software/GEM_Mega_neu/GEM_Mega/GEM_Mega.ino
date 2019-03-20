@@ -118,6 +118,7 @@ void setup()
   Serial.begin(9600);
   //start serial communication 1
   Serial1.begin(9600);
+  Serial.println("Init");
   
   //Declare Pin Mode IN/OUT
   pinMode(SensorGlassDown,INPUT_PULLUP);
@@ -196,7 +197,7 @@ if(Serial.available() > 0)
 //Communication Read
 /*******************************************/  
   //if there are 7 bytes in the buffer read them
-  if(Serial1.available() >= 7)
+  if(Serial1.available() == 7)
   {
     //Copy them to the incomingBytes Array
     for(int i = 0; i < 7; i++)
@@ -209,6 +210,7 @@ if(Serial.available() > 0)
       }   
     }        
   }
+  
 /*******************************************/
 //Communication Process
 /*******************************************/
