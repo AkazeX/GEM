@@ -144,7 +144,6 @@ void setup()
 /*******************************************/
 void loop() 
 {
-  Serial.println(iPosLiquid);
 /*******************************************/
 //Read Inputs
 /*******************************************/  
@@ -220,11 +219,11 @@ if(Serial.available() > 0)
   
   if(incomingBytes[1]== 0) //Page Start
   {
-    //Checking ID
-    bHMIModeUp   = (incomingBytes[2]==  23);
-    bHMIModeDown = (incomingBytes[2]==  24);
-    bHMIQuit  = (incomingBytes[2]==  26);
-    bHMIEmergencyStop = (incomingBytes[2]==  27);    
+    //Checking ID 
+    bHMIModeUp   = (incomingBytes[2]==  22);
+    bHMIModeDown = (incomingBytes[2]==  23);
+    bHMIQuit  = (incomingBytes[2]==  25);
+    bHMIEmergencyStop = (incomingBytes[2]==  26);    
   }
   else if (incomingBytes[1]== 1) //Page Hand
   {
